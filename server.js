@@ -70,67 +70,83 @@ app.get('/api/track/:trackingNumber', async (req, res) => {
 
     const timeline = [];
     
-    // ทำการดึงข้อความดิบทั้งหมดของ wuliuinfo และปรับแต่งช่องว่าง
+    // ดึงข้อความดิบทั้งหมดของ wuliuinfo และปรับแต่งช่องว่าง
     const rawText = $('.wuliuinfo').text().replace(/\s+/g, ' ').trim();
     
-    // ค้นหาตำแหน่งของวันที่แบบ DD/MM/YYYY HH:mm หรือ YYYY-MM-DD HH:mm
-    const dateRegex = /(\d{2}\/\d{2}\/\d{4}\s\d{2}:\d{2}(:\d{2})?)|(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(:\d{2})?)/g;
+    // รายการสถานะหลัก 8 ขั้นตอนที่อนุญาตให้แสดงผล (พร้อมโครงสร้างคำพ้องสมานคำ)
+    const statusMapping = [
+      { key: "ถึงโกดังจีน", display: "ถึงโกดังจีน" },
+      { key: "ออกจากโกดังจีน", display: "ออกจากโกดังจีน" },
+      { key: "ผ่านพิธีศุลกากรจีนเรียบร้อย", display: "ผ่านพิธีศุลกากรจีนเรียบร้อย" },
+      { key: "เรืออยู่ระหว่างขนส่ง", display: "เรืออยู่ระหว่างขนส่ง" },
+      { key: "รถอยู่ระหว่างขนส่ง", display: "รถอยู่ระหว่างขนส่ง" },
+      { key: "อยู่ระหว่างขนส่ง", display: "อยู่ระหว่างขนส่ง" },
+      { key: "ถึงด่านไทย รอตรวจปล่อย", display: "ถึงด่านไทย รอตรวจปล่อย" },
+      { key: "ถึงด่านไทย รอการตรวจปล่อย", display: "ถึงด่านไทย รอตรวจปล่อย" },
+      { key: "ด่านไทยตรวจปล่อย", display: "ด่านไทยตรวจปล่อย" },
+      { key: "ผ่านพิธิศุลกากรไทยเรียบร้อย", display: "ผ่านพิธิศุลกากรไทยเรียบร้อย" },
+      { key: "ผ่านพิธีศุลกากรไทยเรียบร้อย", display: "ผ่านพิธิศุลกากรไทยเรียบร้อย" },
+      { key: "ถึงโกดังไทย", display: "ถึงโกดังไทย" }
+    ];
+
+    // ค้นหาตำแหน่งของสถานะหลักในข้อความดิบ
     const matches = [];
-    let match;
-    
-    while ((match = dateRegex.exec(rawText)) !== null) {
-      matches.push({
-        date: match[0],
-        index: match.index
-      });
-    }
-    
+    statusMapping.forEach(item => {
+      let idx = -1;
+      while ((idx = rawText.indexOf(item.key, idx + 1)) !== -1) {
+        matches.push({
+          item: item,
+          index: idx
+        });
+      }
+    });
+
+    // เรียงลำดับจากซ้ายไปขวา (ตามประวัติในข้อความดิบ)
+    matches.sort((a, b) => a.index - b.index);
+
     if (matches.length > 0) {
       for (let i = 0; i < matches.length; i++) {
-        const start = matches[i].index + matches[i].date.length;
-        const end = (i + 1 < matches.length) ? matches[i+1].index : rawText.length;
-        let desc = rawText.substring(start, end).trim();
-        
-        // ลบเครื่องหมายคั่นกลาง เช่น ":", "-", " " ที่นำหน้า
-        desc = desc.replace(/^[:\-\s]+/, '').trim();
-        
-        if (desc) {
-          if (!timeline.some(item => item.description === desc)) {
-            timeline.push({
-              date: matches[i].date,
-              description: desc
-            });
+        // จำกัดขอบเขตของข้อความสำหรับสถานะนั้นๆ เพื่อดึงข้อมูลวันเวลาที่อยู่ใกล้เคียง
+        const startRange = Math.max((i === 0) ? 0 : matches[i-1].index + matches[i-1].item.key.length, matches[i].index - 25);
+        const endRange = Math.min((i + 1 < matches.length) ? matches[i+1].index : rawText.length, matches[i].index + matches[i].item.key.length + 80);
+        let segmentText = rawText.substring(startRange, endRange).trim();
+
+        // ค้นหาข้อความวันที่ในเซกเมนต์
+        const datePattern = /(\d{2}\/\d{2}\/\d{4}\s\d{2}:\d{2}(:\d{2})?)|(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(:\d{2})?)|(\d{4}-\d{2}-\d{2})|(\d{2}\/\d{2}\/\d{4})/g;
+        const dateMatch = segmentText.match(datePattern);
+        const date = dateMatch ? dateMatch[0] : "";
+
+        // จัดเตรียมข้อความรายละเอียด (ใช้ชื่อมาตรฐานที่กำหนดไว้)
+        let displayDesc = matches[i].item.display;
+
+        // หากมีข้อความคาดการณ์ในวงเล็บ ให้ดึงมาแสดงด้วยเพื่อเป็นประโยชน์แก่ลูกค้า
+        const predMatch = segmentText.match(/\(\s*คาดว่าจะถึงโกดังไทย\s*:\s*\d{2}\/\d{2}\/\d{4}\s*\)/);
+        if (predMatch) {
+          displayDesc += " " + predMatch[0];
+        } else {
+          const predMatch2 = segmentText.match(/\(\s*คาดว่าจะถึงโกดังไทย\s*:\s*\d{4}-\d{2}-\d{2}\s*\)/);
+          if (predMatch2) {
+            displayDesc += " " + predMatch2[0];
           }
+        }
+
+        // ป้องกันรายการซ้ำ
+        if (!timeline.some(item => item.description === displayDesc)) {
+          timeline.push({
+            date: date || "ไม่ระบุเวลา",
+            description: displayDesc
+          });
         }
       }
     } else {
-      // วิธีสำรอง: ค้นหาตามโครงสร้างย่อยของอิลิเมนต์ธรรมดา
-      let rows = $('.wuliuinfo').find('li, tr, p');
-      if (rows.length === 0) {
-        rows = $('.wuliuinfo > div');
+      // วิธีสำรองกรณีพิเศษมากๆ: ให้ดึงข้อความทั้งหมดมาเป็นรายการเดียวหากตรวจไม่พบคำสำคัญเลย
+      const fallbackText = rawText;
+      if (fallbackText) {
+        timeline.push({
+          date: "ข้อมูลล่าสุด",
+          description: fallbackText
+        });
       }
-      if (rows.length === 0) {
-        rows = $('.wuliuinfo').children();
-      }
-      
-      rows.each((i, elem) => {
-        const text = $(elem).text().replace(/\s+/g, ' ').trim();
-        if (text.length > 5) {
-          const dateMatch = text.match(/(\d{2}\/\d{2}\/\d{4})|(\d{4}-\d{2}-\d{2})/);
-          const date = dateMatch ? dateMatch[0] : "";
-          let description = text.replace(date, '').trim();
-          description = description.replace(/^[:\-\s]+/, '').trim();
-          
-          if (date || description) {
-            if (!timeline.some(item => item.description === description)) {
-              timeline.push({
-                date: date || "ไม่ระบุเวลา",
-                description: description || text
-              });
-            }
-          }
-        }
-      });
     }
 
     const cleanTimeline = timeline.sort((a, b) => {
