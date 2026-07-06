@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบติดตามพัสดุระหว่างประเทศ - โคตรร่ำรวย คาร์โก้</title>
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  
+  <div class="tracking-container">
+    
+    <!-- HEADER BREADCRUMB -->
+    <div class="breadcrumb-nav">
+      <span class="brand-pill"></span>
+      <span class="bc-current">ติดตามพัสดุ</span>
+    </div>
+
+    <!-- MAIN SEARCH BLOCK -->
+    <div class="search-section-card">
+      <div class="search-input-group">
+        <input type="text" id="track-number-input" placeholder="กรุณากรอกเลขพัสดุของคุณ" value="MOCK12345">
+        <button id="btn-track-submit">ค้นหา</button>
+      </div>
+      <p class="search-tip">
+        สามารถค้นหาหมายเลขพัสดุพร้อมกันได้หลายหมายเลข โดยใช้ "," หรือการเว้นวรรค เพื่อเว้นวรรคระหว่างหมายเลขพัสดุ
+      </p>
+    </div>
+
+    <!-- TRACKING TIMELINE RESULTS -->
+    <div id="tracking-result-container" class="result-display-card" style="display: none;">
+      <div class="result-header">
+        <div class="result-title-group">
+          <h3>ข้อมูลสถานะพัสดุ: <span id="res-tracking-number" class="text-highlight">-</span></h3>
+          <p class="carrier-info">ระบบขนส่งด่วนระหว่างประเทศ (โคตรร่ำรวย คาร์โก้)</p>
+        </div>
+      </div>
+
+      <div class="result-body-grid">
+        <!-- Left Side: Timeline -->
+        <div class="timeline-box">
+          <div class="timeline" id="timeline-list">
+            <!-- Timeline items rendered by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ & CUSTOMER SERVICE INFORMATION SECTION -->
+    <div class="info-section">
+      <h2 class="section-title">ค้นหาพัสดุ</h2>
+      <p class="section-desc">
+        ฝ่ายบริการลูกค้าของเราพร้อมให้บริการสำหรับปัญหาการติดตามพัสดุ คุณสามารถแอด Line เพื่อติดต่อฝ่ายบริการลูกค้า และเพื่อไม่เป็นการเสียเวลา ทางเราได้ลิสต์คำถามที่พบบ่อยเกี่ยวกับสถานะและการนำเข้าพัสดุไว้ให้แล้วด้านล่างนี้ คุณอาจได้คำตอบจากคำถามเหล่านี้
+      </p>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>ระยะเวลาการจัดส่งสินค้านำเข้าจากจีนมาไทยใช้เวลากี่วัน?</span>
+            <i data-lucide="chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            <p>ปกติการขนส่งทางรถ (EK) จะใช้เวลาประมาณ 10-12 วัน และการขนส่งทางเรือ (SEA) จะใช้เวลาประมาณ 21 วัน นับจากวันที่ตู้สินค้าออกจากโกดังจีนกวางโจว</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>ตู้สินค้าออกจากโกดังจีนวันไหนบ้าง?</span>
+            <i data-lucide="chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            <p>เรามีรอบตู้สินค้าออกจากคลังสินค้ากวางโจวเพื่อส่งมาไทยทุกวันจันทร์ พุธ และศุกร์ สำหรับการส่งทางรถ ส่วนทางเรือจะมีรอบตู้ออกทุกสัปดาห์</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>หากสถานะพัสดุไม่มีการเคลื่อนไหวเกินกำหนดควรทำอย่างไร?</span>
+            <i data-lucide="chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            <p>คุณสามารถก๊อปปี้หมายเลขพัสดุของคุณ และส่งให้เจ้าหน้าที่ช่วยตรวจสอบประวัติในระบบขนส่งหลักอย่างละเอียดได้ทันทีทาง Line ID: @319lpfhw (เวลาทำการ 8.30-17.30 น. จันทร์-เสาร์)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
