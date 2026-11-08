@@ -11,7 +11,7 @@
   <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css">
   <!-- Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 </head>
 <body>
   
@@ -35,23 +35,30 @@
     </div>
 
     <!-- TRACKING TIMELINE RESULTS -->
-    <div id="tracking-result-container" class="result-display-card" style="display: none;">
-      <div class="result-header">
-        <div class="result-title-group">
-          <h3>ข้อมูลสถานะพัสดุ: <span id="res-tracking-number" class="text-highlight">-</span></h3>
-          <p class="carrier-info">ระบบขนส่งด่วนระหว่างประเทศ (โคตรร่ำรวย คาร์โก้)</p>
-        </div>
-      </div>
+    <div id="tracking-result-container" style="display: none;"></div>
 
-      <div class="result-body-grid">
-        <!-- Left Side: Timeline -->
-        <div class="timeline-box">
-          <div class="timeline" id="timeline-list">
-            <!-- Timeline items rendered by JS -->
+    <template id="result-card-template">
+      <div class="result-display-card">
+        <div class="result-header">
+          <div class="result-title-group">
+            <h3>ข้อมูลสถานะพัสดุ: <span class="text-highlight" data-field="number">-</span></h3>
+            <p class="carrier-info">ระบบขนส่งด่วนระหว่างประเทศ (โคตรร่ำรวย คาร์โก้)</p>
           </div>
         </div>
+        <p class="result-message" data-field="message" hidden></p>
+        <div class="timeline-box">
+          <div class="timeline" data-field="timeline"></div>
+        </div>
       </div>
-    </div>
+    </template>
+
+    <template id="timeline-item-template">
+      <div class="timeline-item">
+        <div class="timeline-badge"></div>
+        <div class="timeline-date"></div>
+        <div class="timeline-desc"></div>
+      </div>
+    </template>
 
     <!-- FAQ & CUSTOMER SERVICE INFORMATION SECTION -->
     <div class="info-section">

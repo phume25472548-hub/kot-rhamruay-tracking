@@ -1,42 +1,55 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize Lucide Icons
   lucide.createIcons();
 
-  // 1. FAQ ACCORDION LOGIC
-  const faqQuestions = document.querySelectorAll('.faq-question');
-  
-  faqQuestions.forEach(question => {
+  // 1. FAQ ACCORDION
+  document.querySelectorAll('.faq-question').forEach(question => {
     question.addEventListener('click', () => {
-      // Toggle active class on header
       question.classList.toggle('active');
-      
-      // Get answer panel
       const answer = question.nextElementSibling;
-      
-      // Toggle show class on answer panel
-      if (answer) {
-        answer.classList.toggle('show');
-      }
+      if (answer) answer.classList.toggle('show');
     });
   });
 
-  // 2. PARCEL TRACKING LOGIC (Scraper trigger)
+  // 2. PARCEL TRACKING
+  // Everything from the server is set with textContent, never innerHTML.
   const trackInput = document.getElementById('track-number-input');
   const btnTrackSubmit = document.getElementById('btn-track-submit');
-  const trackingResultContainer = document.getElementById('tracking-result-container');
-  
-  const resTrackingNumber = document.getElementById('res-tracking-number');
-  const timelineList = document.getElementById('timeline-list');
+  const resultContainer = document.getElementById('tracking-result-container');
+  const cardTemplate = document.getElementById('result-card-template');
+  const itemTemplate = document.getElementById('timeline-item-template');
 
-  function getStatusBadgeClass(status) {
-    if (status.includes('ไทย') && !status.includes('ด่าน')) return 'status-badge'; // default badge
-    if (status.includes('ด่าน') || status.includes('ตรวจปล่อย')) return 'status-badge'; 
-    return 'status-badge';
+  function renderTimelineItem(step, isLatest) {
+    const item = itemTemplate.content.firstElementChild.cloneNode(true);
+    if (isLatest) item.classList.add('active');
+    item.querySelector('.timeline-date').textContent = step.date || 'ไม่ระบุเวลา';
+    item.querySelector('.timeline-desc').textContent = step.description;
+    return item;
+  }
+
+  function renderResultCard(result) {
+    const card = cardTemplate.content.firstElementChild.cloneNode(true);
+    card.querySelector('[data-field="number"]').textContent = result.trackingNumber;
+
+    // Not found: the reason. Found: the carrier note from CNS, e.g. the Flash number.
+    const messageText = result.found ? result.note : result.message;
+    if (messageText) {
+      const message = card.querySelector('[data-field="message"]');
+      message.textContent = messageText;
+      message.hidden = false;
+    }
+
+    if (result.found) {
+      const timeline = card.querySelector('[data-field="timeline"]');
+      result.timeline.forEach((step, idx) => timeline.appendChild(renderTimelineItem(step, idx === 0)));
+    } else {
+      card.querySelector('.timeline-box').remove();
+    }
+    return card;
   }
 
   async function performTracking() {
-    const number = trackInput.value.trim();
-    if (!number) {
+    const input = trackInput.value.trim();
+    if (!input) {
       alert('กรุณากรอกเลขพัสดุ');
       return;
     }
@@ -45,36 +58,21 @@ document.addEventListener('DOMContentLoaded', () => {
     btnTrackSubmit.textContent = 'กำลังค้นหา...';
 
     try {
-      const response = await fetch(`/api/track/${encodeURIComponent(number)}`);
+      const response = await fetch(`/api/track/${encodeURIComponent(input)}`);
       const data = await response.json();
 
-      if (data.success) {
-        // Fill data
-        resTrackingNumber.textContent = data.trackingNumber;
-
-
-
-        // Render timeline
-        timelineList.innerHTML = data.timeline.map((item, idx) => `
-          <div class="timeline-item ${idx === 0 ? 'active' : ''}">
-            <div class="timeline-badge"></div>
-            <div class="timeline-date">${item.date}</div>
-            <div class="timeline-desc">${item.description}</div>
-          </div>
-        `).join('');
-
-        trackingResultContainer.style.display = 'block';
-        
-        // Scroll to results smoothly
-        trackingResultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-      } else {
+      if (!data.success) {
         alert(data.message || 'ไม่พบข้อมูลการนำเข้า');
-        trackingResultContainer.style.display = 'none';
+        resultContainer.style.display = 'none';
+        return;
       }
+
+      resultContainer.replaceChildren(...data.results.map(renderResultCard));
+      resultContainer.style.display = 'block';
+      resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
       alert('เกิดข้อผิดพลาดในการเชื่อมต่อระบบหลังบ้าน');
-      trackingResultContainer.style.display = 'none';
+      resultContainer.style.display = 'none';
     } finally {
       btnTrackSubmit.disabled = false;
       btnTrackSubmit.textContent = 'ค้นหา';
@@ -82,9 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   btnTrackSubmit.addEventListener('click', performTracking);
-
   trackInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') performTracking();
   });
-
 });
