@@ -1,0 +1,13 @@
+# dependencies
+/node_modules
+
+# debug
+npm-debug.log*
+
+# misc
+.DS_Store
+*.pem
+
+# env files
+.env*
+!.env.example
