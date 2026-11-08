@@ -4,7 +4,7 @@ status: ใช้งานได้
 routes: [/, GET /api/track/:trackingNumbers]
 data: [แคชในหน่วยความจำของ cns.js (หายเมื่อรีสตาร์ท), ตัวนับคำขอต่อ IP ใน server.js]
 external: [cnscargo.com /home/index?waybillNo= — verified 2026-11-08 กับเลข SF0210589618167 และเลขที่ไม่มีอยู่จริง]
-verified_commit: 9736d57 (แก้แล้วยังไม่ได้ commit)
+verified_commit: 6a95307
 ---
 
 # ติดตามพัสดุ
